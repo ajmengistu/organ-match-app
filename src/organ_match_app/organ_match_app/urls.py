@@ -23,4 +23,5 @@ urlpatterns = [
     path('', include('matchapp.urls')),
     path('register/', matchapp_views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='matchapp/login.html'), name='login'),
+    path('logout/', auth_views.LoginView.as_view(template_name='matchapp/logout.html'), name='logout'),
 ]
