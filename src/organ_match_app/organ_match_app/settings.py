@@ -123,3 +123,5 @@ STATIC_URL = '/static/'
 DATE_INPUT_FORMATS = ['%Y-%m-%d']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+LOGIN_REDIRECT_URL = 'matchapp-home'
+LOGIN_URL = 'login'
