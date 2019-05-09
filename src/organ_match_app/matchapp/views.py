@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.contrib import messages
-from  .forms import UserRegistrationForm
+from django.contrib.auth.decorators import login_required
+from  .forms import UserRegistrationForm, OrganRequestForm
+from .models import UserProfile
+from django.contrib.auth.models import User
 
 def home(request):
     # with connection.cursor() as cursor:
@@ -31,3 +34,31 @@ def register(request):
     else:
         form = UserRegistrationForm()
     return render(request, 'matchapp/register.html', {'form' : form})
+
+@login_required
+def profile(request):
+    return render(request, 'matchapp/profile.html')
+
+@login_required
+def request(request):
+    curr_user_id = request.user.id
+    
+    if request.method == 'POST':
+        form = OrganRequestForm(request.POST)
+        if form.is_valid:
+            input = request.POST.copy()
+            # print(User.objects.filter(user=self.request.user))
+            userprofile = UserProfile.objects.create(
+                first_name=input.get('first_name'), 
+                last_name=input.get('last_name'), 
+                birth_date=input.get('birth_date'), 
+                blood_type=input.get('blood_type'),
+                    user_id=curr_user_id)
+
+            # userprofile.save()           
+    else:        
+        if UserProfile.objects.filter(user_id=curr_user_id).exists():
+            print(True)
+        form = OrganRequestForm()
+    return render(request, 'matchapp/request.html', {'form': form})
+
