@@ -5,19 +5,10 @@ from django.contrib.auth.decorators import login_required
 from  .forms import UserRegistrationForm, OrganRequestForm, UserProfileForm
 from .models import UserProfile
 from django.contrib.auth.models import User
+import datetime
+
 
 def home(request):
-    # with connection.cursor() as cursor:
-    #     cursor.execute("SELECT * FROM organs")
-    #     row = cursor.fetchone()
-    #     print(row)
-
-    # result = 'hi'
-
-    # context = {
-    #     'result': result,
-    #     'title': 'Home',
-    # }
     return render(request, 'matchapp/home.html', {'title':'Home'})
 
 def about(request):
@@ -35,17 +26,43 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'matchapp/register.html', {'form' : form})
 
+
+def calculate_age(bday):
+    today = datetime.date.today()
+    return (today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day)))
+
+def add_profile(curr_user_id, input):
+    userprofile = UserProfile.objects.create(
+                    user_id = curr_user_id,
+                    first_name = input.get('first_name'),
+                    last_name = input.get('last_name'),
+                    birth_date = input.get('birth_date'),
+                    blood_type = input.get('blood_type'),
+                )
+
 @login_required
 def profile(request):
     curr_user_id = request.user.id
 
     if request.method == 'POST':
-        print("post")
-    else:
+        form = UserProfileForm(request.POST)
+
+        if form.is_valid():            
+            input = request.POST.copy()
+            age = calculate_age(datetime.datetime.strptime(input.get('birth_date'), "%Y-%m-%d").date())
+            
+            if age < 18:            
+                messages.error(request, f'You must be 18 years of age or older!')                    
+            else:
+                add_profile(curr_user_id, input)
+                messages.success(request, f'You profile was created successfully.')                    
+        else:
+            messages.warning(request, f'Please provide correct date format!')
+
+        return redirect('profile')
+    else:        
         if UserProfile.objects.filter(user_id=curr_user_id).exists():
-            user = UserProfile.objects.filter(user_id=curr_user_id).values()[0]
-            print('exists')
-            print(user.get('last_name'))
+            user = UserProfile.objects.filter(user_id=curr_user_id).values()[0]            
             context = {
                 'form_exists': False,
                 'first_name': user.get('first_name'),
@@ -68,20 +85,24 @@ def request(request):
     
     if request.method == 'POST':
         form = OrganRequestForm(request.POST)
+        
         if form.is_valid:
-            input = request.POST.copy()
-            # print(User.objects.filter(user=self.request.user))
-            userprofile = UserProfile.objects.create(
-                first_name=input.get('first_name'), 
-                last_name=input.get('last_name'), 
-                birth_date=input.get('birth_date'), 
-                blood_type=input.get('blood_type'),
-                    user_id=curr_user_id)
-
-            # userprofile.save()           
+            input = request.POST.copy()            
+            print(input)
+            # date = self.cleaned_data['date']
+            # if date < datetime.date.today():
+                # raise forms.ValidationError("The date cannot be in the past!")
+            # userprofile = Needs.objects.create(
+                #user_id = curr_user_id
+                # need_by = input.get('need_by'), 
+                # organ = input.get('organ'), 
+            # )
+            # userprofile.save()
+            #            
     else:        
         if UserProfile.objects.filter(user_id=curr_user_id).exists():
-            print(True)
-        form = OrganRequestForm()
+            form = OrganRequestForm()
+        else:
+            return redirect('profile')
     return render(request, 'matchapp/request.html', {'form': form})
 
