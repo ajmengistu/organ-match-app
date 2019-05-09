@@ -15,7 +15,7 @@ class UserProfile(models.Model):
     last_name = models.CharField(max_length=50)
     birth_date = models.DateField(auto_now=False, auto_now_add=False, null=False)
     blood_type = models.CharField(max_length=4)
-    doctor_id = models.IntegerField()
+    doctor_id = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.username} Profile'
