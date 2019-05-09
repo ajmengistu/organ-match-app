@@ -12,6 +12,11 @@ class UserRegistrationForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 class OrganRequestForm(forms.Form):
+    need_by = forms.DateField(input_formats=['%Y-%m-%d'], 
+    widget=forms.TextInput(attrs={'placeholder': 'YYYY-mm-dd'}))
+    organ = forms.ChoiceField(choices=ORGAN_CHOICES, required=True)
+
+class UserProfileForm(forms.Form):
     first_name = forms.CharField(max_length=50)
     last_name = forms.CharField(max_length=50)
     birth_date = forms.DateField(input_formats=['%Y-%m-%d'], 

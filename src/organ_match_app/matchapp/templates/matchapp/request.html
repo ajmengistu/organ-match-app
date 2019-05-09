@@ -1,22 +1,17 @@
 {% extends "matchapp/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="container content-section">
+<div class="content-section">
     <form method="POST">
         {% csrf_token %}
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">Log In</legend>
+            <legend class="border-bottom mb-4">Fill out the following
+                information to request an organ</legend>
             {{ form|crispy }}
         </fieldset>
         <div class="form-group">
             <button class="btn btn-outline-info" type="submit">Submit</button>
         </div>
     </form>
-    <!-- <div class="border-top pt-3">
-        <small class="text-muted">
-            Need An Account? <a class="ml-2" href="{% url 'register' %}">Submit</a>
-        </small>
-    </div> -->
 </div>
-
 {% endblock content %}

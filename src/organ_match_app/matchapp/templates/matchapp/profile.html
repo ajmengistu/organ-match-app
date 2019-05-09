@@ -1,6 +1,55 @@
 {% extends "matchapp/base.html" %}
+{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
-<h1>profile page!</h1>
+<div class="content-section">
+    {% if form_exists %}
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Please provide us the following
+                information to request or donate organs</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Submit</button>
+        </div>
+    </form>
+    {% else %}
+    <h1>Profile</h1>
+    <hr>
+    <div class="col-8">
+        <img src="{% static 'matchapp/images/profile-default.png' %}" alt="John"
+            style="width:25%">
+            
+        <ul class="list-group pt-5">
+            </li> <li class="list-group-item d-flex justify-content-between
+            align-items-center">
+            Account ID:
+            <span class="">{{ profile_id }} </span>
+        </li>
+            <li class="list-group-item d-flex justify-content-between
+                align-items-center">
+                Full Name:
+                <span>{{ first_name }} {{ last_name }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between
+                align-items-center">
+                Birthday:
+                <span class="">{{ birth_date }} </span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between
+                align-items-center">
+                Blood Type:
+                <span class="">{{ blood_type }} </span>
+            </li> <li class="list-group-item d-flex justify-content-between
+                align-items-center">
+                Your Doctor's Name:               
+                <span class="">{{ doctor_id }} </span>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

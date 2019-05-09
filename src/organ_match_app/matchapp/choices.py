@@ -14,4 +14,10 @@ BLOOD_TYPE_CHOICES = (
     )
 
 
-
+ORGAN_CHOICES = (
+    ('Heart', ('Heart')),
+    ('Liver', ('Liver')),
+    ('Kidney', ('Kidney')),
+    ('Lung', ('Lung')),
+    ('Pancreas', ('Pancreas')),
+)
