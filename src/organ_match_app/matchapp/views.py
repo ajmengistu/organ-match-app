@@ -3,7 +3,7 @@ from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from  .forms import UserRegistrationForm, OrganRequestForm, PersonForm
-from .models import Person
+from .models import Person, Doctors
 from django.contrib.auth.models import User
 import datetime
 
@@ -26,19 +26,19 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'matchapp/register.html', {'form' : form})
 
-
 def calculate_age(bday):
     today = datetime.date.today()
     return (today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day)))
 
 def add_person(curr_user_id, input):
-    Person = Person.objects.create(
+    person = Person.objects.create(
                     user_id = curr_user_id,
                     first_name = input.get('first_name'),
                     last_name = input.get('last_name'),
                     birth_date = input.get('birth_date'),
                     blood_type = input.get('blood_type'),
                 )
+    person.save()
     print("-------Added user profile information---------")
 
 def assign_doctor(uid):
@@ -49,16 +49,37 @@ def assign_doctor(uid):
 	people assigned to that doctor through their doctor_id field. To break ties, choose
 	the doctor with the smallest id.
     """
-    print("--------Assigned a doctor to uid------------")
+    q = ("WITH temp AS ( "
+    + "(SELECT matchapp_doctors.id, 0 patients FROM matchapp_doctors "
+    + "LEFT OUTER JOIN matchapp_person ON matchapp_person.doctor_id = matchapp_doctors.id "
+    + "WHERE matchapp_person.user_id IS NULL ORDER BY matchapp_doctors.id) "
+    + "UNION (SELECT matchapp_doctors.id, COUNT(*) patients FROM matchapp_doctors "
+    + "JOIN matchapp_person ON matchapp_person.doctor_id = matchapp_doctors.id "
+    + "GROUP BY matchapp_doctors.id ORDER BY matchapp_doctors.id) ) "
+    + "SELECT * FROM temp ORDER BY patients, id")
 
+    # Must include primary key in the query set
+    query_set = Doctors.objects.raw(q)
+    
+    did = -1
+    for doctor in query_set:
+        did = doctor.id
+        break
+    print(did)
+    
+    # Assign a doctor to uid
+    person = Person.objects.get(user_id=uid)
+    person.doctor_id = did
+    person.save()
+    print("--------Assigned a doctor to uid------------")
+    
 @login_required
-def profile(request):
+def profile(request):    
     """
     Add a person to the database with all of the fields specified.
-	Do not update the user's doctor_id in this method, simply leave it null in this method.
-    """
+    """   
     curr_user_id = request.user.id
-
+    
     if request.method == 'POST':
         form = PersonForm(request.POST)
         if form.is_valid():            
@@ -68,9 +89,9 @@ def profile(request):
             if age < 18:            
                 messages.error(request, f'You must be 18 years of age or older!')                    
             else:
-                # add_profile(curr_user_id, input)
+                add_person(curr_user_id, input)
                 assign_doctor(curr_user_id)
-                messages.success(request, f'You profile was created successfully.')                    
+                messages.success(request, f'Your information was submitted successfully.')                    
         else:
             messages.warning(request, f'Please provide correct date format!')
 
@@ -84,7 +105,7 @@ def profile(request):
                 'last_name': user.get('last_name'),
                 'birth_date': user.get('birth_date'),
                 'blood_type': user.get('blood_type'),
-                'doctor_id': user.get('doctor_id'),
+                'doctor_id': Doctors.objects.get(id=user.get('doctor_id')).name,
                 'profile_id': user.get('id'),
             }
         else:            
@@ -128,4 +149,3 @@ def request_organ(request):
         else:
             return redirect('profile')
     return render(request, 'matchapp/request.html', {'form': form})
-
