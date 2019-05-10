@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from  .forms import UserRegistrationForm, OrganRequestForm, PersonForm
+from  .forms import UserRegistrationForm, OrganRequestForm, PersonForm, OrganOfferForm
 from .models import Person, Doctors, Needs, Available
 from django.contrib.auth.models import User
 import datetime
@@ -175,11 +175,45 @@ def request_organ(request):
     else:        
         if not Person.objects.filter(user_id=curr_user_id).exists():
             return redirect('profile')
-    form = OrganRequestForm()    
-           
+
     context = {
-                'form': form,
+                'form': OrganRequestForm(),
                 'requests': get_requests(curr_user_id),
                 'offers': get_offers(curr_user_id),
             }
     return render(request, 'matchapp/request.html', context)
+
+def add_offer_organ(id, organ):
+    try:
+        available = Available.objects.create(
+            user_id = id,
+            organ = organ,            
+        )
+        available.save()
+        print("------------Added offered organ-------------")
+        return True
+    except Exception as e:
+        print(type(e))
+        return False
+
+@login_required
+def offer_organ(request):
+    curr_user_id = request.user.id
+
+    if request.method == 'POST':
+        form = OrganOfferForm(request.POST)
+        if form.is_valid():
+            input = request.POST.copy()
+            if add_offer_organ(curr_user_id, input.get('organ')):
+                 messages.success(request, f'Your offer has been submitted successfully!')    
+            else:
+                 messages.error(request, f'You have already offered this organ [' + input.get('organ')  +']!')
+            
+
+    context = {
+        'form': OrganOfferForm(),
+        'requests' : get_requests(curr_user_id),
+        'offers' : get_offers(curr_user_id),
+    }
+
+    return render(request, 'matchapp/offer.html', context)

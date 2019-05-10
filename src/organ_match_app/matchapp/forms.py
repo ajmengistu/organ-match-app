@@ -16,6 +16,9 @@ class OrganRequestForm(forms.Form):
     widget = forms.TextInput(attrs={'placeholder': 'YYYY-mm-dd (please provide a date in the future)'}))
     organ = forms.ChoiceField(choices=ORGAN_CHOICES, required=True)
 
+class OrganOfferForm(forms.Form):    
+    organ = forms.ChoiceField(choices=ORGAN_CHOICES, required=True)
+
 class PersonForm(forms.Form):
     first_name = forms.CharField(max_length=50)
     last_name = forms.CharField(max_length=50)
