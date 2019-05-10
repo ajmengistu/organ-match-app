@@ -3,13 +3,19 @@ from django.db import connection
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from  .forms import UserRegistrationForm, OrganRequestForm, PersonForm
-from .models import Person, Doctors
+from .models import Person, Doctors, Needs, Available
 from django.contrib.auth.models import User
 import datetime
 
 
 def home(request):
-    return render(request, 'matchapp/home.html', {'title':'Home'})
+    curr_user_id = request.user.id
+    context = {
+        'title': 'Home',
+        'requests': get_requests(curr_user_id),
+        'offers': get_offers(curr_user_id),
+    }
+    return render(request, 'matchapp/home.html', context)
 
 def about(request):
     return render(request, 'matchapp/about.html', {'title': 'About'})
@@ -107,45 +113,73 @@ def profile(request):
                 'blood_type': user.get('blood_type'),
                 'doctor_id': Doctors.objects.get(id=user.get('doctor_id')).name,
                 'profile_id': user.get('id'),
+                'requests': get_requests(curr_user_id),
+                'offers': get_offers(curr_user_id),
             }
         else:            
             context = {
                 'form_exists': True,
-                'form': PersonForm()
+                'form': PersonForm(),
+                'requests': get_requests(curr_user_id),
+                'offers': get_offers(curr_user_id), 
             }
     return render(request, 'matchapp/profile.html', context)
 
+def add_requested_organ(request, curr_user_id, org, need_by):
+    try:
+        needs = Needs.objects.create(
+            user_id = curr_user_id,
+            organ = org,
+            date_by = need_by
+        )
+        needs.save()
+        print("------------Added requested organ-------------")
+        return True
+    except Exception as e:
+        print(type(e))
+        return False
+
+def date_in_future(date):    
+    return datetime.datetime.strptime(date, "%Y-%m-%d").date() > datetime.date.today()
+
+def get_offers(curr_user_id):
+    return Available.objects.filter(user_id=curr_user_id)
+def get_requests(curr_user_id):
+    return Needs.objects.filter(user_id=curr_user_id)
 @login_required
 def request_organ(request): 
     """
     Add a needed organ into the database. The person who needs
 	the organ is given by their id. A person should not be able to submit a request for 2
-	of the same organ.
-    Do not update the person's doctor_id in this method.
+	of the same organ.    
     """   
     curr_user_id = request.user.id
     
     if request.method == 'POST':
-        form = OrganRequestForm(request.POST)        
-        if form.is_valid:
-            input = request.POST.copy()            
-            print(input)
-            messages.warning(request, f'Please provide a date in the future!')
-        else:
+        form = OrganRequestForm(request.POST)                
+        if form.is_valid():
+            input = request.POST.copy()
+            organ = input.get('organ')
+            need_by = input.get('need_by')
+
+            if date_in_future(need_by):
+                if add_requested_organ(request, curr_user_id, organ, need_by):
+                    messages.success(request, f'Your request has been submitted successfully!')    
+                else:
+                    messages.error(request, f'You have already requested for this organ [' + organ  +']!')
+            else:
+                messages.warning(request, f'Please provide a correct date in the future!')    
+        else:            
             messages.warning(request, f'Please provide a correct date in the future!')
-            # date = self.cleaned_data['date']
-            # if date < datetime.date.today():
-                # raise forms.ValidationError("The date cannot be in the past!")
-            # Person = Needs.objects.create(
-                #user_id = curr_user_id
-                # need_by = input.get('need_by'), 
-                # organ = input.get('organ'), 
-            # )
-            # Person.save()
-            #            
+            redirect('matchapp-request')
     else:        
-        if Person.objects.filter(user_id=curr_user_id).exists():
-            form = OrganRequestForm()
-        else:
+        if not Person.objects.filter(user_id=curr_user_id).exists():
             return redirect('profile')
-    return render(request, 'matchapp/request.html', {'form': form})
+    form = OrganRequestForm()    
+           
+    context = {
+                'form': form,
+                'requests': get_requests(curr_user_id),
+                'offers': get_offers(curr_user_id),
+            }
+    return render(request, 'matchapp/request.html', context)

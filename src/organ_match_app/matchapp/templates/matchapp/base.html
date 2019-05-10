@@ -43,9 +43,7 @@
             <li class="nav-item active">
               <a class="nav-link" href="#">Offer</a>
             </li>
-            <li class="nav-item active">
-              <a class="nav-link" href="#">About</a>
-            </li>
+            
           </ul>
           <div class="navbar-nav">
               {% if user.is_authenticated %}
@@ -88,19 +86,28 @@
         <div class="col">
           <div class="col ml-8 border mt-3">
             <br>
-            <h3>Your Status</h3>
-            <p class='text-muted'>You can put any information here
-              you'd like.
+            <h3>Your Organ Status</h3>
+            <p class='text-muted'>
+              <h5>Requests</h5>
               <ul class="list-group">
-                <li class="list-group-item
-                  list-group-item-light"><a>Latest Posts</a></li>
-                <li class="list-group-item
-                  list-group-item-light">Announcements</li>
-                <li class="list-group-item
-                  list-group-item-light">Calendars</li>
-                <li class="list-group-item
-                  list-group-item-light">etc</li>
-              </ul>
+                  {% for request in requests %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{request.organ}}
+                    <span class="badge badge-primary badge-pill">pending</span>
+                  </li>
+                  {% endfor %} 
+                </ul>
+                
+                <br>
+                <h5>Offers</h5>                
+                <ul class="list-group">
+                    {% for offer in offers %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      Heart
+                      <span class="badge badge-pending badge-pill">success</span>
+                    </li>                    
+                    {% endfor %}            
+                  </ul>
             </p>
           </div>
         </div>
