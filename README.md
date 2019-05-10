@@ -61,4 +61,5 @@ https://devcenter.heroku.com/articles/deploying-python
 This project is licensed under MIT License
 
 ## Acknowledgments/Resources
+* (Django Documentation)[https://docs.djangoproject.com/en/2.2/]
 * https://www.youtube.com/watch?v=F5mRW0jo-U4&t
