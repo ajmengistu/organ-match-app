@@ -1,7 +1,3 @@
-
-
-
-
 BLOOD_TYPE_CHOICES = (
     ('O+',('O+')),
     ('O-',('O-')),

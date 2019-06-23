@@ -73,20 +73,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'organ_match_app.wsgi.application'
 
+import urllib
 
-# Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+db_url = "mongodb+srv://root:"+ urllib.parse.quote_plus("adminadmin")+"@cluster0-wai51.mongodb.net/test?retryWrites=true&w=majority"
+db_pass = urllib.parse.quote_plus("adminadmin")
 DATABASES = {
-      'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'default': {
+        'ENGINE': 'djongo',
         'NAME': 'organmatchapp',
+        'HOST': db_url,
         'USER': 'root',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': ''
+        'PASSWORD': db_pass,
     }
 }
+
+# DATABASES = {
+#       'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'organmatchapp',
+#         'USER': 'root',
+#         'PASSWORD': 'admin',
+#         'HOST': 'localhost',
+#         'PORT': ''
+#     }
+# }
 
 
 # Password validation
