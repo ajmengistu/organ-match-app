@@ -146,6 +146,7 @@ def get_offers(curr_user_id):
     return Available.objects.filter(user_id=curr_user_id)
 def get_requests(curr_user_id):
     return Needs.objects.filter(user_id=curr_user_id)
+    
 @login_required
 def request_organ(request): 
     """
