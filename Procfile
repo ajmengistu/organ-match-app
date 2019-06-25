@@ -1,1 +1,1 @@
-web: gunicorn organ-match-app.wsgi
+web: gunicorn organmatchapp.wsgi
